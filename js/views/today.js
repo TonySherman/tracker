@@ -204,6 +204,26 @@ export function mountToday(root, rerender){
     });
   }
 
+  // swipe left/right anywhere on the page body to step through days
+  let sx = 0, sy = 0, tracking = false;
+  root.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    if (e.target.closest('.datestrip, .heat-scroll, .bars')) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+  }, { passive: true });
+  root.addEventListener('touchend', e => {
+    if (!tracking) return;
+    tracking = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.8) return;
+    const next = S.addDays(selected, dx < 0 ? 1 : -1);
+    if (next > S.todayKey()) return;
+    selected = next;
+    haptic(8);
+    rerender();
+  }, { passive: true });
+
   root.querySelectorAll('.hrow').forEach(row => {
     const habit = S.getHabit(row.dataset.habit);
     if (!habit) return;

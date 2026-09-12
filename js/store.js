@@ -61,9 +61,20 @@ export function save(){
     localStorage.setItem(KEY, JSON.stringify(state));
   }catch(err){
     console.error('Streak: save failed', err);
+    // surfaced by app.js — silent data loss is the worst failure mode here
+    document.dispatchEvent(new CustomEvent('streak:saveerror', { detail: err }));
     return false;
   }
   return true;
+}
+
+/** Can this browser actually persist anything? (private windows sometimes can't.) */
+export function storageWorks(){
+  try{
+    localStorage.setItem('streak.probe', '1');
+    localStorage.removeItem('streak.probe');
+    return true;
+  }catch{ return false; }
 }
 
 export function load(){

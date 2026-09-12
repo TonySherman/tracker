@@ -111,3 +111,38 @@ export through import — no console errors.
 
 **Next**
 - Onboarding for first run, app icons (PNG/maskable), polish pass.
+
+---
+
+## 2026-09-12 — Step 3: app icons, heatmap labels, swipe
+
+**App icon — generated with `gpt-image-2`**
+The brand mark is a flame (a streak that stays lit). Rather than hand-drawing
+a raster icon, I generated one at 1024×1024 with OpenAI's `gpt-image-2` — a
+gradient flame on the exact app background (`#0B0B12`) so the icon matches the
+splash screen with no visible seam.
+
+The raw generation isn't a shippable icon set, so `scratchpad/gen.py` + a Pillow
+pass derives one:
+- The flat background is detected and trimmed to the flame's true bounding box.
+- That art is re-padded onto a square at two different scales: ~76% fill for
+  normal icons, ~53% for the **maskable** variant so nothing important falls
+  outside Android's circular safe zone.
+- Exported at 192, 512 (normal), 512 (maskable), 180 (apple-touch) and 32
+  (favicon), all LANCZOS-resampled from the 1024 original.
+
+The UI icons stayed as hand-written SVG — they need to inherit `currentColor`
+and stay crisp at 18px, which a raster can't do. Image generation earned its
+place only where a rich, non-flat mark was actually wanted.
+
+**Also in this pass**
+- Heatmaps gained month labels across the top and Mon/Wed/Fri labels down the
+  side, which is what made them readable rather than decorative. The leading
+  column's label is suppressed — it's a partial month and would be clipped.
+- Swipe left/right on the Today screen to step through days. Touches starting
+  inside a horizontally scrollable child (date strip, heatmap, bar chart) are
+  ignored so the gesture never fights those.
+- Storage failures are now surfaced: a probe at boot warns if the browser
+  blocks localStorage, and a failed write (quota) raises a toast instead of
+  losing data silently.
+- Service worker caches the icon set too.

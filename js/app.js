@@ -7,6 +7,7 @@ import { renderToday, mountToday } from './views/today.js';
 import { renderHabits, mountHabits } from './views/habits.js';
 import { renderStats, mountStats } from './views/statsview.js';
 import { renderSettings, mountSettings, applyTheme } from './views/settings.js';
+import { toast } from './ui.js';
 
 const TABS = [
   { id: 'today',    label: 'Today',  icon: 'today', render: renderToday,    mount: mountToday },
@@ -68,6 +69,13 @@ window.addEventListener('hashchange', () => {
 
 S.load();
 applyTheme();
+
+document.addEventListener('streak:saveerror', () =>
+  toast('Couldn’t save — storage is full or blocked', 'err'));
+
+if (!S.storageWorks()){
+  setTimeout(() => toast('This browser is blocking storage, so nothing will be saved', 'err'), 1800);
+}
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
   if (S.state.settings.theme === 'auto') applyTheme();
 });
