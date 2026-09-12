@@ -1,5 +1,5 @@
-/* Streak service worker — cache-first shell so the app opens offline. */
-const VERSION = 'streak-v1';
+/* Ember service worker — cache-first shell so the app opens offline. */
+const VERSION = 'ember-v2';
 const ASSETS = [
   './',
   './index.html',

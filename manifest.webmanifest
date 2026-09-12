@@ -1,7 +1,7 @@
 {
-  "name": "Streak — Habit Tracker",
-  "short_name": "Streak",
-  "description": "A fast, private, offline-first habit tracker. Build streaks that stick.",
+  "name": "Ember — Habit Tracker",
+  "short_name": "Ember",
+  "description": "A fast, private, offline-first habit tracker. Keep the small things going.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

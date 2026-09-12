@@ -13,7 +13,7 @@ window.addEventListener('beforeinstallprompt', e => {
 });
 
 function fileName(){
-  return `streak-backup-${S.todayKey()}.json`;
+  return `ember-backup-${S.todayKey()}.json`;
 }
 
 function bytes(n){
@@ -72,7 +72,7 @@ export function renderSettings(){
       </button>
       <button class="srow" data-act="about">
         <span class="ic">${I.info}</span>
-        <span class="tx"><b>About Streak</b><span>${d.habits} habit${d.habits === 1 ? '' : 's'} · ${d.entries} check-in${d.entries === 1 ? '' : 's'} · ${bytes(d.bytes)}</span></span>
+        <span class="tx"><b>About Ember</b><span>${d.habits} habit${d.habits === 1 ? '' : 's'} · ${d.entries} check-in${d.entries === 1 ? '' : 's'} · ${bytes(d.bytes)}</span></span>
         <span class="chev">${I.chevR}</span>
       </button>
 
@@ -84,7 +84,7 @@ export function renderSettings(){
       </button>
 
       <p class="muted center" style="margin:26px 0 4px;font-size:12.5px">
-        Streak keeps everything in this browser's local storage.<br>Clearing site data will remove it — export regularly.
+        Ember keeps everything in this browser's local storage.<br>Clearing site data will remove it — export regularly.
       </p>
       <div style="height:8px"></div>
     </div>`;
@@ -130,9 +130,9 @@ function exportSheet(){
         try{
           const file = new File([json], fileName(), { type: 'application/json' });
           if (navigator.canShare?.({ files: [file] })){
-            await navigator.share({ files: [file], title: 'Streak backup' });
+            await navigator.share({ files: [file], title: 'Ember backup' });
           }else{
-            await navigator.share({ title: 'Streak backup', text: json });
+            await navigator.share({ title: 'Ember backup', text: json });
           }
           close();
         }catch(err){
@@ -158,7 +158,7 @@ function importSheet(rerender){
   sheet({
     title: 'Import backup',
     body: `
-      <p class="muted" style="margin:0 0 16px">Choose a <code>streak-backup-*.json</code> file, or paste its contents below.</p>
+      <p class="muted" style="margin:0 0 16px">Choose a backup <code>.json</code> file, or paste its contents below. Files exported from an older version still work.</p>
 
       <div class="field">
         <span class="lbl">How should it be applied?</span>
@@ -224,7 +224,7 @@ function importSheet(rerender){
 function aboutSheet(){
   const d = S.dataStats();
   sheet({
-    title: 'About Streak',
+    title: 'About Ember',
     body: `
       <p class="muted" style="margin:0 0 16px">A small, private habit tracker. No account, no server, no analytics — everything is stored in this browser and only leaves when you export it.</p>
       <div class="statgrid">
@@ -250,8 +250,8 @@ export function mountSettings(root, rerender){
         const json = S.exportData();
         try{
           const file = new File([json], fileName(), { type: 'application/json' });
-          if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: 'Streak backup' });
-          else await navigator.share({ title: 'Streak backup', text: json });
+          if (navigator.canShare?.({ files: [file] })) await navigator.share({ files: [file], title: 'Ember backup' });
+          else await navigator.share({ title: 'Ember backup', text: json });
         }catch(err){
           if (err?.name !== 'AbortError') toast('Sharing isn’t available here', 'err');
         }

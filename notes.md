@@ -242,3 +242,49 @@ All pass with no console errors.
 Every piece of the brief is in place — multi-habit daily tracking, streaks and
 stats, mobile-first design, installable PWA, browser storage with JSON export
 and import for device migration, and a static `index.html` that loads it all.
+
+---
+
+## 2026-09-12 — Renamed: Streak → Ember
+
+"Streak" was generic and already carries baggage (Streak CRM, and roughly every
+other habit app). **Ember** was chosen for three reasons:
+
+1. **It keeps the flame mark meaningful.** The icon didn't have to change — an
+   ember *is* the thing the app asks you to keep alive.
+2. **It matches the app's actual philosophy.** The streak logic here is
+   deliberately forgiving: only scheduled days can break a run, and today never
+   breaks one until the day is over. "Streak" is the aggressive framing of that;
+   an ember you tend is the honest one. The tagline moved from "Small things.
+   Every day." to **"Keep it lit."**
+3. It's short, says itself, and survives being a home-screen label.
+
+"Streak" survives as the **domain term** — streaks are still what the app
+counts, and every function name, stat label and piece of copy about them is
+unchanged. Only the brand moved.
+
+**The part that mattered: not losing anyone's data.** The storage key changed
+from `streak.data.v1` to `ember.data.v1`, which would silently orphan the
+history of anyone who had already used the preview. `load()` now checks a
+`LEGACY_KEYS` list when the current key is empty, adopts what it finds, and only
+removes the old key *after* the re-save succeeds — so a failed write leaves the
+original untouched rather than destroying both copies.
+
+Old `streak-backup-*.json` files still import: the parser validates the shape of
+the data, never the brand name on it.
+
+**Brand consistency fix, found while reviewing the rename.** The splash mark was
+a hand-drawn SVG flame that didn't match the generated app icon — different
+silhouette, and a waist so thin that at 84px the top curl read as a detached
+shard. Rather than redraw it by eye, I traced the actual icon: threshold the
+generated PNG against its flat background, take the largest contour with
+scikit-image's `find_contours`, simplify with `approximate_polygon` (tolerance
+1.4 → 61 points, sub-pixel facets at display size), and normalise into a 64-unit
+viewBox. The splash and `icon.svg` now carry the exact silhouette of the
+installed icon. The inner flame detail was dropped deliberately — it's a soft
+gradient transition in the source, not a hard-edged shape, so it can't be traced
+cleanly, and the silhouette is what makes a mark recognisable anyway.
+
+**Re-verified** all five suites after the rename: journey, visual demo,
+responsive (320/768/1280), offline boot, plus a new `rename.mjs` that seeds data
+under the old key and asserts it migrates, renders and streaks correctly.

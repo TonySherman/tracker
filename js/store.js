@@ -4,7 +4,9 @@
    document is the export format too, so backup/restore is free.
    ============================================================ */
 
-export const KEY = 'streak.data.v1';
+export const KEY = 'ember.data.v1';
+/** Storage keys this app used to write to, newest first. */
+const LEGACY_KEYS = ['streak.data.v1'];
 export const SCHEMA = 1;
 
 export const COLORS = ['violet','pink','orange','amber','lime','green','cyan','blue','rose','indigo'];
@@ -60,7 +62,7 @@ export function save(){
   try{
     localStorage.setItem(KEY, JSON.stringify(state));
   }catch(err){
-    console.error('Streak: save failed', err);
+    console.error('Ember: save failed', err);
     // surfaced by app.js — silent data loss is the worst failure mode here
     document.dispatchEvent(new CustomEvent('streak:saveerror', { detail: err }));
     return false;
@@ -71,18 +73,31 @@ export function save(){
 /** Can this browser actually persist anything? (private windows sometimes can't.) */
 export function storageWorks(){
   try{
-    localStorage.setItem('streak.probe', '1');
-    localStorage.removeItem('streak.probe');
+    localStorage.setItem('ember.probe', '1');
+    localStorage.removeItem('ember.probe');
     return true;
   }catch{ return false; }
 }
 
 export function load(){
   try{
-    const raw = localStorage.getItem(KEY);
+    let raw = localStorage.getItem(KEY);
+
+    // adopt data written under an older storage key, then retire that key
+    if (!raw){
+      for (const old of LEGACY_KEYS){
+        const legacy = localStorage.getItem(old);
+        if (!legacy) continue;
+        raw = legacy;
+        state = migrate(JSON.parse(legacy));
+        if (save()) localStorage.removeItem(old);
+        return state;
+      }
+    }
+
     if (raw) state = migrate(JSON.parse(raw));
   }catch(err){
-    console.error('Streak: could not read saved data', err);
+    console.error('Ember: could not read saved data', err);
     state = blank();
   }
   return state;
@@ -235,7 +250,7 @@ export function setSetting(key, value){
 /* ---------------- import / export ---------------- */
 
 export function exportData(){
-  return JSON.stringify({ ...state, exportedAt: new Date().toISOString(), app: 'Streak' }, null, 2);
+  return JSON.stringify({ ...state, exportedAt: new Date().toISOString(), app: 'Ember' }, null, 2);
 }
 
 /**
@@ -246,7 +261,7 @@ export function importData(json, mode = 'replace'){
   let parsed;
   try{ parsed = JSON.parse(json); }
   catch{ throw new Error('That file isn’t valid JSON.'); }
-  if (!parsed || !Array.isArray(parsed.habits)) throw new Error('That doesn’t look like a Streak backup.');
+  if (!parsed || !Array.isArray(parsed.habits)) throw new Error('That doesn’t look like an Ember backup.');
 
   const incoming = migrate(parsed);
 

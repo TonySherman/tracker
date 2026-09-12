@@ -110,7 +110,7 @@ function maybeWelcome(){
     </div>`;
 
   sheet({
-    title: 'Welcome to Streak',
+    title: 'Welcome to Ember',
     body: `
       <p class="muted" style="margin:0 0 20px">Three things worth knowing before you start.</p>
       ${point('🔥', 'Streaks are forgiving', 'Only days a habit is actually scheduled can break a streak — and today never breaks one until the day is over.')}

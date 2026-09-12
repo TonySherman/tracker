@@ -1,4 +1,4 @@
-# Streak — Habit Tracker
+# Ember — Habit Tracker
 
 A fast, private, mobile-first habit tracker that runs entirely in the browser.
 No account, no server, no analytics. Open `index.html` and it works.
@@ -34,7 +34,7 @@ loads plain ES modules directly.
 
 ## Moving your data to a new device
 
-**Settings → Export backup** produces `streak-backup-YYYY-MM-DD.json` (download,
+**Settings → Export backup** produces `ember-backup-YYYY-MM-DD.json` (download,
 share sheet, or clipboard). On the new device, **Settings → Import backup** and
 choose *Replace everything*. To fold two devices' histories together instead,
 choose *Merge* — habits are matched by id, then by name, and the higher value
