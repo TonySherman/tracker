@@ -45,6 +45,7 @@ export function heatmapHTML(habit, weeks = 18){
     `<span class="heat-cell" data-l="${l}" style="${cellStyle(l, color)}"></span>`).join('');
 
   return `
+    <div class="heat-block">
     <div class="heat-wrap">
       <div class="heat-dows">${dows}</div>
       <div class="heat-scroll" data-heat>
@@ -52,7 +53,8 @@ export function heatmapHTML(habit, weeks = 18){
         <div class="heat">${body}</div>
       </div>
     </div>
-    <div class="heat-legend"><span>Less</span>${legend}<span>More</span></div>`;
+    <div class="heat-legend"><span>Less</span>${legend}<span>More</span></div>
+    </div>`;
 }
 
 export function barsHTML(habit, days = 14){
@@ -73,9 +75,4 @@ export function statTile(label, value, sub = ''){
 /** Scroll every heatmap to the most recent week. */
 export function alignHeatmaps(root){
   root.querySelectorAll('[data-heat]').forEach(el => { el.scrollLeft = el.scrollWidth; });
-}
-
-export function monthLabel(key){
-  const d = S.parseKey(key);
-  return `${MONTH[d.getMonth()]} ${d.getFullYear()}`;
 }

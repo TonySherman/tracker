@@ -178,3 +178,25 @@ export→import round trip. No console errors.
   the "no backend, your data never leaves the device" promise. The streaks-at-
   risk banner is the honest version of that nudge.
 - *Cloud sync.* Same reason. Export/import is the migration path.
+
+---
+
+## 2026-09-12 — Step 5: responsive pass
+
+Tested at 320, 390, 768 and 1280 px wide (plus the iPhone 390×844 profile) with
+an automated check that the document never scrolls horizontally at any of them.
+
+**Fixed at 320px** — the narrowest phones in use. Counter rows were collapsing:
+the habit name truncated to a few characters while the meta line wrapped into a
+three-line stack.
+- Removed the "20 min goal" chip from counter rows entirely. The stepper already
+  reads `22 / 20 min`; saying it twice was costing the name its space.
+- `.hrow-meta` is now `nowrap` with an ellipsis, so it can never grow the row.
+- A `≤360px` media query trims the badge, steppers, date cells and type scale.
+
+**Heatmaps on wide screens** were pinned to the left of a much wider card. They
+now sit in a `width:fit-content` block centred in the card, which leaves the
+scrolling behaviour untouched when the grid *is* wider than the space.
+
+Also dropped two unused helpers (`monthLabel`, `pluralise`) rather than leave
+dead exports around.

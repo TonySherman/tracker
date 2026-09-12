@@ -161,8 +161,6 @@ export function confirmSheet({ title, message, confirmLabel = 'Confirm', danger 
 
 /* ---------------- misc ---------------- */
 
-export function pluralise(n, one, many = one + 's'){ return `${n} ${n === 1 ? one : many}`; }
-
 /** Confetti-ish burst from an element's centre. */
 export function burst(host, color = '#a78bfa'){
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;

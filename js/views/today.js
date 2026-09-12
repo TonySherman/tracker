@@ -126,7 +126,7 @@ function habitRow(h){
   if (streak.n > 0) meta.push(`<span class="flame">${I.flame}${streak.n}${streak.unit === 'wk' ? 'w' : ''}</span>`);
   if (h.schedule.type === 'days') meta.push(esc(h.schedule.days.map(d => DOW[d][0]).join('')));
   if (h.schedule.type === 'weekly') meta.push(`${h.schedule.perWeek}× / week`);
-  if (isCount) meta.push(`${h.target}${h.unit ? ' ' + esc(h.unit) : ''} goal`);
+  // counters already show "/ target unit" in the stepper — don't say it twice
 
   const control = isCount ? `
     <div class="hcount">

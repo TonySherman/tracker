@@ -603,3 +603,29 @@ select.input{ appearance:none; background-image:url("data:image/svg+xml;utf8,<sv
   0%{ transform:translateY(-20px) rotate(0deg); opacity:1 }
   100%{ transform:translateY(105vh) rotate(720deg); opacity:.9 }
 }
+
+/* Centre the heatmap when it's narrower than its card; let it scroll when not */
+.heat-block{ width:fit-content; max-width:100%; margin-inline:auto; }
+
+/* Habit-row meta must never wrap into a tall stack on narrow phones */
+.hrow-meta{ flex-wrap:nowrap; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* ============================================================
+   Very narrow phones (≤ 360px)
+   ============================================================ */
+@media (max-width: 360px){
+  :root{ --pad:14px; }
+  .hrow{ gap:10px; padding:12px 11px; }
+  .hrow-badge{ width:38px; height:38px; font-size:18px; border-radius:12px; }
+  .hrow-name{ font-size:14.5px; }
+  .hrow-meta{ font-size:11.5px; }
+  .hcheck{ width:38px; height:38px; }
+  .hcount .stepper{ width:30px; height:30px; }
+  .hcount .stepper svg{ width:13px; height:13px; }
+  .hcount .val{ min-width:40px; font-size:13px; }
+  .hcount .val small{ font-size:9px; }
+  .dcell{ width:45px; }
+  .hdr h1{ font-size:24px; }
+  .stat .v{ font-size:22px; }
+  .nav-btn{ font-size:10px; }
+}
