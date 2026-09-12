@@ -396,9 +396,9 @@ button{ background:none; border:0; cursor:pointer; padding:0; }
 .stat .v small{ font-size:13px; font-weight:650; color:var(--text-2); letter-spacing:0; }
 
 /* heatmap */
-.heat{ display:flex; gap:3px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; direction:rtl; }
+.heat{ display:flex; gap:3px; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
 .heat::-webkit-scrollbar{ display:none; }
-.heat-col{ display:flex; flex-direction:column; gap:3px; direction:ltr; }
+.heat-col{ display:flex; flex-direction:column; gap:3px; flex:0 0 auto; }
 .heat-cell{ width:13px; height:13px; border-radius:3.5px; background:var(--surface-2); }
 .heat-cell[data-l="0"]{ background:var(--surface-2); }
 .heat-cell.off{ opacity:.25; }
