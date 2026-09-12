@@ -7,7 +7,8 @@ import { renderToday, mountToday } from './views/today.js';
 import { renderHabits, mountHabits } from './views/habits.js';
 import { renderStats, mountStats } from './views/statsview.js';
 import { renderSettings, mountSettings, applyTheme } from './views/settings.js';
-import { toast } from './ui.js';
+import { toast, sheet } from './ui.js';
+import { openHabitForm } from './views/form.js';
 
 const TABS = [
   { id: 'today',    label: 'Today',  icon: 'today', render: renderToday,    mount: mountToday },
@@ -93,7 +94,41 @@ const reveal = () => {
   setTimeout(() => splash.remove(), 600);
 };
 const hasData = S.state.habits.length > 0;
-setTimeout(reveal, hasData ? 650 : 1200);
+// returning users shouldn't sit through a title card every morning
+setTimeout(() => { reveal(); if (!hasData) maybeWelcome(); }, hasData ? 380 : 1100);
+
+/** One-time welcome, shown only before the first habit exists. */
+function maybeWelcome(){
+  if (S.state.settings.onboarded || S.state.habits.length) return;
+  S.setSetting('onboarded', true);
+
+  const point = (emoji, title, text) => `
+    <div style="display:flex;gap:13px;align-items:flex-start;margin-bottom:16px">
+      <span style="font-size:22px;line-height:1.2;flex:0 0 auto">${emoji}</span>
+      <div><b style="display:block;font-size:15px;font-weight:700;letter-spacing:-.015em">${title}</b>
+      <span style="display:block;color:var(--text-2);font-size:13.5px;margin-top:2px">${text}</span></div>
+    </div>`;
+
+  sheet({
+    title: 'Welcome to Streak',
+    body: `
+      <p class="muted" style="margin:0 0 20px">Three things worth knowing before you start.</p>
+      ${point('🔥', 'Streaks are forgiving', 'Only days a habit is actually scheduled can break a streak — and today never breaks one until the day is over.')}
+      ${point('🔒', 'Everything stays on this device', 'No account, no server. Your history lives in this browser and nowhere else.')}
+      ${point('📤', 'Back it up now and then', 'Settings → Export gives you one file that carries everything to a new phone.')}
+      <div class="stack" style="margin-top:22px">
+        <button class="btn btn-primary btn-block" data-start>${I.plus} Create my first habit</button>
+        <button class="btn btn-block btn-ghost" data-close>I'll look around first</button>
+      </div>
+      <div style="height:6px"></div>`,
+    onMount(root, close){
+      root.querySelector('[data-start]').addEventListener('click', () => {
+        close();
+        setTimeout(() => openHabitForm(null, render), 340);
+      });
+    }
+  });
+}
 
 // a new day while the app sits open should refresh the Today screen
 let dayStamp = S.todayKey();

@@ -200,3 +200,45 @@ scrolling behaviour untouched when the grid *is* wider than the space.
 
 Also dropped two unused helpers (`monthLabel`, `pluralise`) rather than leave
 dead exports around.
+
+---
+
+## 2026-09-12 — Step 6: first run, splash timing, offline verification
+
+**First-run welcome.** A one-time sheet covering the three things that change
+how the app feels: streaks are forgiving, nothing leaves the device, and export
+is the backup. It ends on "Create my first habit", which opens the habit form
+directly. Gated on `settings.onboarded`, which was in the schema from day one
+and is now actually used.
+
+**Splash timing.** The title card held for 650ms on every launch. For an app
+opened daily that's friction, so returning users (anyone with at least one
+habit) now get 380ms — long enough for the fade to read as intentional, short
+enough not to wait. First-time visitors still get the full 1100ms, because for
+them it's the first impression rather than an obstacle.
+
+**Offline verified, not assumed.** Automated run: load the app, create a habit,
+wait for `navigator.serviceWorker.ready`, cut the network at the browser-context
+level, reload. The app booted from cache and rendered the saved habit with no
+network at all. Measured a warm start at ~855ms from reload to splash dismissed.
+
+## Testing
+
+Three scripted Chromium passes (in the scratchpad, not committed — they're
+scaffolding, not app code):
+- `smoke.mjs` — full user journey at 390×844: welcome, create all three schedule
+  types, tick and step habits, seed history, open every screen and sheet, switch
+  theme, export→import round trip.
+- `demo.mjs` — deterministic 120-day dataset for reviewing the real visual
+  design, including the streak banner and perfect-day celebration.
+- `resp.mjs` — 320 / 768 / 1280px with an assertion that the document never
+  scrolls horizontally.
+- `offline.mjs` — service-worker cold/warm start with the network disabled.
+
+All pass with no console errors.
+
+## Status: complete
+
+Every piece of the brief is in place — multi-habit daily tracking, streaks and
+stats, mobile-first design, installable PWA, browser storage with JSON export
+and import for device migration, and a static `index.html` that loads it all.
