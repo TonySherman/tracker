@@ -577,3 +577,29 @@ select.input{ appearance:none; background-image:url("data:image/svg+xml;utf8,<sv
   color:var(--text-3); letter-spacing:.04em; white-space:nowrap;
 }
 .heat-scroll .heat{ overflow:visible; }
+
+/* ============================================================
+   Streaks-at-risk banner
+   ============================================================ */
+.risk{
+  display:flex; align-items:center; gap:12px;
+  padding:13px 15px; margin-top:12px; border-radius:var(--r-lg);
+  background:linear-gradient(100deg, rgba(251,146,60,.16), rgba(244,114,182,.08));
+  border:1px solid rgba(251,146,60,.28);
+}
+.risk .fl{ color:var(--c-orange); flex:0 0 auto; }
+.risk .fl svg{ width:22px; height:22px; filter:drop-shadow(0 0 8px rgba(251,146,60,.55)); animation:flicker 2.6s var(--ease) infinite; }
+@keyframes flicker{ 0%,100%{ transform:scale(1) } 45%{ transform:scale(1.13) rotate(-3deg) } 70%{ transform:scale(.97) } }
+.risk b{ display:block; font-size:14.5px; font-weight:700; letter-spacing:-.015em; }
+.risk span{ display:block; font-size:12.5px; color:var(--text-2); margin-top:1px; }
+
+/* perfect-day confetti */
+.confetti{ position:fixed; inset:0; z-index:90; pointer-events:none; overflow:hidden; }
+.confetti i{
+  position:absolute; top:-14px; width:8px; height:13px; border-radius:2px;
+  animation:fall linear forwards;
+}
+@keyframes fall{
+  0%{ transform:translateY(-20px) rotate(0deg); opacity:1 }
+  100%{ transform:translateY(105vh) rotate(720deg); opacity:.9 }
+}

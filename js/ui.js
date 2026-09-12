@@ -181,3 +181,21 @@ export function burst(host, color = '#a78bfa'){
   host.appendChild(wrap);
   setTimeout(() => wrap.remove(), 900);
 }
+
+/** A short confetti shower for finishing every habit in a day. */
+export function celebrate(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const wrap = document.createElement('div');
+  wrap.className = 'confetti';
+  const palette = ['#a78bfa','#f472b6','#fb923c','#fbbf24','#a3e635','#22d3ee'];
+  for (let i = 0; i < 44; i++){
+    const p = document.createElement('i');
+    p.style.cssText =
+      `left:${Math.random() * 100}%;background:${palette[i % palette.length]};` +
+      `animation-duration:${1.5 + Math.random() * 1.4}s;animation-delay:${Math.random() * 450}ms;` +
+      `width:${5 + Math.random() * 5}px;height:${9 + Math.random() * 8}px`;
+    wrap.appendChild(p);
+  }
+  document.body.appendChild(wrap);
+  setTimeout(() => wrap.remove(), 3600);
+}

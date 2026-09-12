@@ -4,7 +4,7 @@
 import * as S from '../store.js';
 import * as St from '../stats.js';
 import { I } from '../icons.js';
-import { esc, haptic, burst, toast } from '../ui.js';
+import { esc, haptic, burst, toast, celebrate } from '../ui.js';
 import { openHabitDetail } from './detail.js';
 import { openHabitForm } from './form.js';
 
@@ -88,6 +88,33 @@ function summaryCard(){
     </div>`;
 }
 
+/** Habits with a live streak that today could still break. */
+function atRisk(){
+  if (selected !== S.todayKey()) return [];
+  return S.activeHabits()
+    .filter(h => S.isScheduled(h, selected) && !S.isDone(h, selected) && h.createdAt <= selected)
+    .map(h => ({ h, streak: St.currentStreak(h) }))
+    .filter(x => x.streak.n >= 2 && x.streak.unit === 'day')
+    .sort((a, b) => b.streak.n - a.streak.n);
+}
+
+function riskBanner(){
+  const risky = atRisk();
+  if (!risky.length) return '';
+  const names = risky.slice(0, 3).map(x => x.h.name);
+  const rest = risky.length - names.length;
+  const list = names.join(', ') + (rest > 0 ? ` +${rest} more` : '');
+  const top = risky[0].streak.n;
+  return `
+    <div class="risk">
+      <span class="fl">${I.flame}</span>
+      <div>
+        <b>${risky.length === 1 ? `A ${top}-day streak is on the line` : `${risky.length} streaks on the line`}</b>
+        <span>${esc(list)}</span>
+      </div>
+    </div>`;
+}
+
 function habitRow(h){
   const val = S.getValue(h.id, selected);
   const done = S.isDone(h, selected);
@@ -148,6 +175,7 @@ export function renderToday(){
       ${header(isToday, d)}
       ${dateStrip()}
       ${summaryCard()}
+      ${riskBanner()}
       ${due.length ? `
         <div class="section-title"><span>${isToday ? 'Today' : niceDate(selected)}</span><span>${due.filter(h => S.isDone(h, selected)).length}/${due.length}</span></div>
         <div class="habits">${due.map(habitRow).join('')}</div>` : `
@@ -232,9 +260,11 @@ export function mountToday(root, rerender){
       e.stopPropagation();
       const nowDone = S.toggle(habit.id, selected) > 0;
       haptic(nowDone ? 14 : 6);
-      const btn = e.currentTarget;
-      btn.classList.add('pop');
-      if (nowDone) burst(row, getComputedStyle(row).getPropertyValue('--hc').trim() || '#a78bfa');
+      e.currentTarget.classList.add('pop');
+      if (nowDone){
+        burst(row, getComputedStyle(row).getPropertyValue('--hc').trim() || '#a78bfa');
+        checkPerfectDay();
+      }
       setTimeout(rerender, nowDone ? 300 : 120);
     });
 
@@ -250,6 +280,7 @@ export function mountToday(root, rerender){
         if (!before && after){
           haptic(16);
           burst(row, getComputedStyle(row).getPropertyValue('--hc').trim() || '#a78bfa');
+          checkPerfectDay();
           setTimeout(rerender, 300);
         }else{
           rerender();
@@ -260,6 +291,15 @@ export function mountToday(root, rerender){
     row.querySelectorAll('[data-open]').forEach(part =>
       part.addEventListener('click', () => openHabitDetail(habit.id, selected)));
   });
+}
+
+/** Fire the celebration exactly once, on the check-in that clears the day. */
+function checkPerfectDay(){
+  const sum = St.daySummary(selected);
+  if (sum.total < 1 || sum.done !== sum.total) return;
+  celebrate();
+  haptic(30);
+  toast(sum.total === 1 ? 'Done for the day 🎉' : `Perfect day — all ${sum.total} done 🎉`, 'ok');
 }
 
 export function currentDate(){ return selected; }

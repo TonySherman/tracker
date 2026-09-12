@@ -146,3 +146,35 @@ place only where a rich, non-flat mark was actually wanted.
   blocks localStorage, and a failed write (quota) raises a toast instead of
   losing data silently.
 - Service worker caches the icon set too.
+
+---
+
+## 2026-09-12 — Step 4: motivation and polish
+
+**Streaks at risk.** The Today screen now shows a banner when habits with a live
+streak of 2+ days are still unfinished, naming them. This is the single most
+useful nudge a habit tracker can give: it turns an abstract list into "you have
+something to lose in the next few hours". It only appears for *today* — there's
+nothing to save on a day that's already gone.
+
+**Perfect-day celebration.** Clearing the last habit of a day fires a confetti
+shower, a long haptic and a toast. It's deliberately reserved for the whole day
+rather than each check-in, so it stays meaningful.
+
+**Fixed: date strip started scrolled to the wrong end.** `#app` was `hidden`
+until the splash faded, so the centring maths ran against a zero-width element
+and fell back to the left edge. The app is now unhidden before the first render
+(the splash is fixed-position and covers it anyway), which also makes any future
+layout measurement correct at boot.
+
+**Verified** again in headless Chromium at 390×844 with a deterministic 120-day
+dataset across all three schedule types: streak banner, per-habit detail,
+stats screen, perfect-day celebration, the new-habit sheet, and a full
+export→import round trip. No console errors.
+
+**Deliberately not built**
+- *Reminders / notifications.* A static page can't schedule a notification when
+  it isn't open — that needs push infrastructure and a server, which would break
+  the "no backend, your data never leaves the device" promise. The streaks-at-
+  risk banner is the honest version of that nudge.
+- *Cloud sync.* Same reason. Export/import is the migration path.

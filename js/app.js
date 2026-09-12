@@ -81,12 +81,14 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
 });
 
 current = tabFromHash();
+// unhide before the first render: layout maths (centring the date strip)
+// reads zero widths on a hidden subtree. The splash overlays it either way.
+appEl.hidden = false;
 render();
 
 // dismiss the splash once the first paint is done
 const splash = document.getElementById('splash');
 const reveal = () => {
-  appEl.hidden = false;
   splash.classList.add('hide');
   setTimeout(() => splash.remove(), 600);
 };
