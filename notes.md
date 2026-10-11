@@ -288,3 +288,51 @@ cleanly, and the silhouette is what makes a mark recognisable anyway.
 **Re-verified** all five suites after the rename: journey, visual demo,
 responsive (320/768/1280), offline boot, plus a new `rename.mjs` that seeds data
 under the old key and asserts it migrates, renders and streaks correctly.
+
+---
+
+## 2026-10-11 — Fixed: a violet disc in the top-left corner
+
+Reported as "an odd blue circle in the top left, when I take a screenshot".
+The app was in fact drawing one.
+
+**What was wrong.** The ambient background wash (`body::before`) was three
+radial gradients, the first of them `radial-gradient(60% 40% at 12% -6%,
+rgba(167,139,250,.20), transparent 70%)`. Two problems compounded:
+
+1. **The centre was on-screen.** `at 12% -6%` puts the bright core at
+   x = 0.12 × 390 ≈ 47px — just inside the left edge. Scanning the blue channel
+   across the top row confirmed it: brightness *rose* from 47 at the corner to a
+   peak of 54 at x≈40, then fell away. A local maximum inside the viewport is a
+   blob with a middle, which is to say a circle. (The top-left gradient is the
+   violet one; the top-right is pink. "Blue, top left" picks out exactly the one
+   that is blue.)
+2. **It faded to bare `transparent`.** `transparent` is `rgba(0,0,0,0)`, so the
+   ramp from a violet to it passes through *darkened grey*, drawing a faint ring
+   at the gradient's edge. Browsers are meant to interpolate in premultiplied
+   alpha and Chromium does, which is why this never showed up in testing here —
+   WebKit is historically less consistent about it, and the effect is worst on a
+   near-black background, which is exactly this app.
+
+**The fix.** Every ambient ramp now ends on *its own hue* at zero alpha
+(`rgba(167,139,250,0)`) rather than `transparent`, and each centre was moved
+off-canvas (`at -12% -18%`) with a much larger radius. The light now washes in
+from an edge with no visible core. Same correction applied to `.splash-glow`.
+
+Measured across the top row, before → after: peak 54 at x=40 → peak 46 at x=0,
+falling monotonically to 24. No interior maximum, so nothing that can read as a
+disc. The ambient depth is still there; it just isn't a shape any more.
+
+**Worth knowing for anything like this in future:** screenshots capture raw
+pixel values, while True Tone, Night Shift and auto-brightness change only what
+the eye sees live. A subtle wash on a dark background can therefore look far
+stronger in the saved file than it ever did on the screen — which is why this
+was reported as a screenshot problem rather than a display one.
+
+Note also that `apple-mobile-web-app-status-bar-style: black-translucent` draws
+app content *under* the iOS status bar. Any system indicator iOS puts up there
+(the blue capsule round the clock during screen mirroring or background location
+use, a "‹ Back to …" pill) lands directly on top of this corner and will look
+like part of the app. Kept as is — the edge-to-edge look is worth it, and the
+safe-area padding already keeps content clear — but it's the first thing to rule
+out if something odd appears up there again.

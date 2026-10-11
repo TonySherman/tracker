@@ -91,16 +91,21 @@ body{
 }
 body::before{
   content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  /* Each centre sits off-canvas, so the light washes in from an edge and there
+     is no bright core to read as a disc. Each ramp ends on its OWN hue at zero
+     alpha, never bare `transparent` (= rgba(0,0,0,0)): that ramp passes through
+     darkened grey and draws a faint ring at the gradient's edge — most visible
+     on WebKit, and on a near-black background. */
   background:
-    radial-gradient(60% 40% at 12% -6%, rgba(167,139,250,.20), transparent 70%),
-    radial-gradient(55% 38% at 96% 4%, rgba(244,114,182,.16), transparent 70%),
-    radial-gradient(70% 50% at 50% 108%, rgba(251,146,60,.10), transparent 70%);
+    radial-gradient(125% 85% at -12% -18%, rgba(167,139,250,.20), rgba(167,139,250,0) 62%),
+    radial-gradient(105% 72% at 112% -8%,  rgba(244,114,182,.15), rgba(244,114,182,0) 62%),
+    radial-gradient(120% 65% at 50% 118%,  rgba(251,146,60,.10),  rgba(251,146,60,0)  65%);
 }
 html[data-theme="light"] body::before{
   background:
-    radial-gradient(60% 40% at 12% -6%, rgba(167,139,250,.30), transparent 70%),
-    radial-gradient(55% 38% at 96% 4%, rgba(244,114,182,.22), transparent 70%),
-    radial-gradient(70% 50% at 50% 108%, rgba(251,146,60,.16), transparent 70%);
+    radial-gradient(125% 85% at -12% -18%, rgba(167,139,250,.30), rgba(167,139,250,0) 62%),
+    radial-gradient(105% 72% at 112% -8%,  rgba(244,114,182,.21), rgba(244,114,182,0) 62%),
+    radial-gradient(120% 65% at 50% 118%,  rgba(251,146,60,.16),  rgba(251,146,60,0)  65%);
 }
 img,svg{ max-width:100%; display:block; }
 button,input,select,textarea{ font:inherit; color:inherit; }
@@ -126,7 +131,7 @@ button{ background:none; border:0; cursor:pointer; padding:0; }
 .splash.hide{ opacity:0; visibility:hidden; pointer-events:none; }
 .splash-glow{
   position:absolute; width:min(90vw,460px); aspect-ratio:1; border-radius:50%;
-  background:radial-gradient(circle, rgba(167,139,250,.30), rgba(244,114,182,.12) 45%, transparent 70%);
+  background:radial-gradient(circle, rgba(167,139,250,.30), rgba(244,114,182,.12) 45%, rgba(244,114,182,0) 70%);
   filter:blur(18px); animation:pulseGlow 3.4s var(--ease) infinite;
 }
 @keyframes pulseGlow{ 0%,100%{ transform:scale(.94); opacity:.75 } 50%{ transform:scale(1.06); opacity:1 } }
