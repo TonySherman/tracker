@@ -336,3 +336,44 @@ use, a "‹ Back to …" pill) lands directly on top of this corner and will loo
 like part of the app. Kept as is — the edge-to-edge look is worth it, and the
 safe-area padding already keeps content clear — but it's the first thing to rule
 out if something odd appears up there again.
+
+---
+
+## 2026-10-11 — The blue circle, actually diagnosed
+
+The screenshot settled it, and corrected my earlier guess. Two details gave it
+away: the capture toggle was on **Full Page**, and the blob was *bright* violet
+— far stronger than the 20%-alpha wash the CSS asks for. A gradient that is
+merely badly placed cannot render brighter than the alpha it was given, so the
+previous entry's explanation (on-screen centre, `transparent` fade) was not the
+cause. Those were real improvements, but they were not this bug.
+
+**The actual cause.** `body::before` was `position: fixed` with `inset: 0`.
+Safari's "Full Page" screenshot rasterises a long page in tiles, and a fixed
+full-bleed layer is painted into *every* tile and composited onto the same
+output. A 20%-alpha wash stacked n times reaches `1 - 0.8ⁿ` — eight tiles is
+83% opacity. That is precisely the near-opaque violet blob with an apparently
+hard edge (the accumulation saturates, so the falloff clips), and it explains
+every part of the report at once: why it is bright, why it is only in
+screenshots, why only Full Page, and why it never reproduced in testing here.
+
+**The fix.** The ambient layer is now `position: absolute` pinned to the top of
+the document at `height: 100dvh`, so it is painted exactly once — in screenshots
+and on screen alike. Measured on-screen appearance before and after: top-row
+blue channel went `[46,45,44,…,24]` → `[47,46,45,…,25]`, i.e. identical within a
+level. The cost is that the wash no longer follows you down a long page, which
+is barely perceptible — light from the top of the page is the effect anyway.
+
+Verified on the Stats page that triggered it (1352px tall): the layer now covers
+844px of it rather than being repainted across the whole thing, and a full-page
+capture shows no blob.
+
+**The general rule this leaves behind:** a `position: fixed` full-bleed layer
+with partial alpha is not safe. Any tiled or paginated rasteriser — Safari's
+Full Page screenshot, print, PDF export — may composite it once per tile. If a
+decorative overlay must span the viewport, anchor it to the document rather than
+the viewport, or give it no alpha to accumulate.
+
+`.nav` is still `position: fixed`, which is unavoidable for a bottom tab bar,
+but it is near-opaque and short, so tile accumulation has nothing visible to do
+to it.
