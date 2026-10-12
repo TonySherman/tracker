@@ -18,7 +18,7 @@
    browser's own HTTP cache answer from up to ten minutes ago, and the service
    worker never sees the new bytes at all.
 */
-const VERSION = 'ember-v3';
+const VERSION = 'ember-v4';
 const ASSETS = [
   './',
   './index.html',

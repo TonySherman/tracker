@@ -426,3 +426,54 @@ against Jekyll's handling of unusual paths.
 **once**, and the new value is live (was: needed two). Offline boot still works,
 and the app passes at 320/390/1280px with an export→import round trip and no
 console errors.
+
+---
+
+## 2026-10-12 — The real cause: alpha inside gradient colour stops
+
+A live screen grab (not Full Page) settled it, and ruled out both earlier
+theories. The blob is there in normal use, so the tiling-accumulation
+explanation was wrong too — and crucially, a second element was failing the same
+way: completed habit rows rendered their tint as a **solid slab with a hard
+diagonal edge** at roughly 60% across, instead of a soft wash.
+
+**The pattern, from the evidence in two screenshots:**
+
+| Gradient | Stops | Renders |
+|---|---|---|
+| `--grad` (+ button, bar chart, wordmark) | opaque | correctly |
+| ambient wash | `rgba(…,.20)` → `rgba(…,0)` | solid block, hard edge |
+| `.hrow::before` | `color-mix(… transparent)` → `transparent 62%` | solid block, hard edge at 62% |
+
+Flat `rgba()` *fills* are fine everywhere — the cards, borders and the nav all
+render correctly. It is specifically **alpha inside a gradient colour stop** that
+this WebKit build paints as the start colour at full opacity, stopping dead at
+the stop position. The `.hrow` edge landing exactly on its `62%` stop is the
+clinching detail.
+
+**The fix is a rule, not a patch: no gradient in this stylesheet carries alpha
+in a stop.** Each case took the form that suits it:
+
+- **Ambient wash** → one radial with *opaque* stops, pre-blended against `--bg`
+  (`#2a2540 → #0b0b12`, and `#ded5fb → #f6f5fb` for light) so the falloff ends
+  invisibly. One light rather than three, because opaque layers occlude instead
+  of compositing — the pink and orange accents are gone, which costs little.
+- **Splash glow** → a flat disc with `filter: blur(55px)`. Same soft glow, no
+  gradient interpolation at all. Arguably better than what it replaced.
+- **Completed habit row** → a flat tint
+  (`color-mix(in srgb, var(--hc) 13%, var(--surface))`). The fading wash carried
+  no information the flat tint doesn't.
+- **Streaks-at-risk banner** → flat `rgba(251,146,60,.14)`.
+- **`--grad-soft`** (chips, emoji picker, swatches) → flat tint. It sits on
+  several different backdrops, so a flat alpha fill is the only backdrop-agnostic
+  form; an opaque gradient would have been wrong on at least one of them.
+
+Guard for the future: `grep -nE "gradient\([^;]*(rgba|transparent|color-mix)"
+css/styles.css` must return nothing. Opaque gradients are proven fine on the
+affected device — the bar chart and accent button never misrendered — so this
+costs no visual range, only a precomputation step when a tint is wanted.
+
+Verified in both themes: completed rows now carry an even tint, the risk banner
+is flat, the splash glow is smooth. Passes at 320/390/1280px with an
+export→import round trip, offline boot, single-reload deploy pickup, and no
+console errors. `VERSION` → `ember-v4` so the activate step purges v3.

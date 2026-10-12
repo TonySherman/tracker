@@ -21,7 +21,10 @@
   --accent-2:  #f472b6;
   --accent-3:  #fb923c;
   --grad:      linear-gradient(135deg, #a78bfa 0%, #f472b6 55%, #fb923c 100%);
-  --grad-soft: linear-gradient(135deg, rgba(167,139,250,.22), rgba(244,114,182,.18));
+  /* Flat, not a gradient: this sits on several different backdrops, and alpha
+     INSIDE a gradient is what renders as a hard-edged block on some WebKit
+     builds. A flat alpha fill is unaffected. */
+  --grad-soft: rgba(167,139,250,.19);
 
   --good:  #4ade80;
   --warn:  #fbbf24;
@@ -107,16 +110,16 @@ body{ position:relative; }
 body::before{
   content:""; position:absolute; top:0; left:0; right:0; height:100dvh;
   z-index:-1; pointer-events:none;
-  background:
-    radial-gradient(125% 85% at -12% -18%, rgba(167,139,250,.20), rgba(167,139,250,0) 62%),
-    radial-gradient(105% 72% at 112% -8%,  rgba(244,114,182,.15), rgba(244,114,182,0) 62%),
-    radial-gradient(120% 65% at 50% 118%,  rgba(251,146,60,.10),  rgba(251,146,60,0)  65%);
+  /* OPAQUE stops, pre-blended against --bg. Gradients whose stops carry alpha
+     render as a solid block with a hard edge on some WebKit builds; opaque ones
+     interpolate correctly everywhere (the bar chart and the accent button have
+     always been fine, and they are opaque). Ending on exactly --bg makes the
+     falloff invisible. One light instead of three, because opaque layers
+     occlude each other rather than compositing. */
+  background: radial-gradient(125% 85% at -12% -18%, #2a2540, #0b0b12 62%);
 }
 html[data-theme="light"] body::before{
-  background:
-    radial-gradient(125% 85% at -12% -18%, rgba(167,139,250,.30), rgba(167,139,250,0) 62%),
-    radial-gradient(105% 72% at 112% -8%,  rgba(244,114,182,.21), rgba(244,114,182,0) 62%),
-    radial-gradient(120% 65% at 50% 118%,  rgba(251,146,60,.16),  rgba(251,146,60,0)  65%);
+  background: radial-gradient(125% 85% at -12% -18%, #ded5fb, #f6f5fb 62%);
 }
 img,svg{ max-width:100%; display:block; }
 button,input,select,textarea{ font:inherit; color:inherit; }
@@ -142,8 +145,9 @@ button{ background:none; border:0; cursor:pointer; padding:0; }
 .splash.hide{ opacity:0; visibility:hidden; pointer-events:none; }
 .splash-glow{
   position:absolute; width:min(90vw,460px); aspect-ratio:1; border-radius:50%;
-  background:radial-gradient(circle, rgba(167,139,250,.30), rgba(244,114,182,.12) 45%, rgba(244,114,182,0) 70%);
-  filter:blur(18px); animation:pulseGlow 3.4s var(--ease) infinite;
+  /* A flat disc with a heavy blur — same soft glow, zero gradient interpolation. */
+  background:rgba(167,139,250,.30);
+  filter:blur(55px); animation:pulseGlow 3.4s var(--ease) infinite;
 }
 @keyframes pulseGlow{ 0%,100%{ transform:scale(.94); opacity:.75 } 50%{ transform:scale(1.06); opacity:1 } }
 .splash-inner{ position:relative; text-align:center; padding:0 24px; }
@@ -318,13 +322,13 @@ button{ background:none; border:0; cursor:pointer; padding:0; }
   transition:transform .16s var(--ease), background .2s, border-color .25s;
   overflow:hidden;
 }
-.hrow::before{
-  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
-  background:linear-gradient(100deg, color-mix(in srgb, var(--hc) 16%, transparent), transparent 62%);
-  opacity:0; transition:opacity .3s var(--ease);
+/* A flat tint, not a fading wash: `transparent` as a gradient stop is alpha,
+   and alpha inside a gradient is what paints a hard-edged slab on some WebKit
+   builds. A flat fill carries the same meaning and cannot misrender. */
+.hrow.done{
+  background:color-mix(in srgb, var(--hc) 13%, var(--surface));
+  border-color:color-mix(in srgb, var(--hc) 38%, transparent);
 }
-.hrow.done::before{ opacity:1; }
-.hrow.done{ border-color:color-mix(in srgb, var(--hc) 38%, transparent); }
 .hrow:active{ transform:scale(.985); }
 .hrow-badge{
   position:relative; z-index:1;
@@ -600,7 +604,7 @@ select.input{ appearance:none; background-image:url("data:image/svg+xml;utf8,<sv
 .risk{
   display:flex; align-items:center; gap:12px;
   padding:13px 15px; margin-top:12px; border-radius:var(--r-lg);
-  background:linear-gradient(100deg, rgba(251,146,60,.16), rgba(244,114,182,.08));
+  background:rgba(251,146,60,.14);
   border:1px solid rgba(251,146,60,.28);
 }
 .risk .fl{ color:var(--c-orange); flex:0 0 auto; }
