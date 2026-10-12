@@ -16,6 +16,14 @@ function fileName(){
   return `ember-backup-${S.todayKey()}.json`;
 }
 
+/** When the running build was deployed. Derived from the HTML's Last-Modified
+    header, so it needs no manual version bumping and can't drift from reality. */
+function buildStamp(){
+  const d = new Date(document.lastModified);
+  if (isNaN(d)) return 'unknown';
+  return d.toLocaleString(undefined, { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+
 function bytes(n){
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
@@ -68,6 +76,11 @@ export function renderSettings(){
       <button class="srow" data-act="install" ${deferredInstall ? '' : 'hidden'} id="install-row">
         <span class="ic">${I.install}</span>
         <span class="tx"><b>Install on this device</b><span>Run it full-screen, offline, like a native app</span></span>
+        <span class="chev">${I.chevR}</span>
+      </button>
+      <button class="srow" data-act="update">
+        <span class="ic">${I.restore}</span>
+        <span class="tx"><b>Check for updates</b><span>Clear the offline cache and reload the latest build</span></span>
         <span class="chev">${I.chevR}</span>
       </button>
       <button class="srow" data-act="about">
@@ -231,7 +244,7 @@ function aboutSheet(){
         <div class="stat"><div class="k">Habits</div><div class="v">${d.habits}</div></div>
         <div class="stat"><div class="k">Check-ins</div><div class="v">${d.entries}</div></div>
         <div class="stat"><div class="k">Data size</div><div class="v" style="font-size:20px">${bytes(d.bytes)}</div></div>
-        <div class="stat"><div class="k">Version</div><div class="v" style="font-size:20px">1.0</div></div>
+        <div class="stat"><div class="k">Build</div><div class="v" style="font-size:15px;line-height:1.3">${esc(buildStamp())}</div></div>
       </div>
       <div class="section-title"><span>How streaks work</span></div>
       <p class="muted" style="margin:0">A streak counts consecutive days you hit a habit, skipping days it isn't scheduled for. Today never breaks a streak until the day is over, so an unfinished habit won't punish you at breakfast. Habits set to “× per week” count streaks in weeks instead.</p>
@@ -264,6 +277,18 @@ export function mountSettings(root, rerender){
         if (outcome === 'accepted') toast('Installing…', 'ok');
         deferredInstall = null;
         document.getElementById('install-row')?.setAttribute('hidden', '');
+        break;
+      }
+      case 'update': {
+        toast('Checking for updates…');
+        try{
+          const reg = await navigator.serviceWorker?.getRegistration();
+          reg?.active?.postMessage('purge');   // drop every cached response
+          await reg?.update();                 // pull a new worker if there is one
+        }catch(err){
+          console.warn('Ember: update check failed', err);
+        }
+        setTimeout(() => location.reload(), 700);
         break;
       }
       case 'reset': {

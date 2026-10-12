@@ -377,3 +377,52 @@ the viewport, or give it no alpha to accumulate.
 `.nav` is still `position: fixed`, which is unavoidable for a bottom tab bar,
 but it is near-opaque and short, so tile accumulation has nothing visible to do
 to it.
+
+---
+
+## 2026-10-12 — GitHub Pages: why a pushed fix can look like it never landed
+
+Testing happens at `https://tonysherman.github.io/tracker/`. Verified the
+deployment chain rather than assuming it: Pages serves the
+`claude/eloquent-babbage-gssqz4` branch (`main` holds only a README), and the
+live `css/styles.css` already contained the `position:absolute` ambient layer.
+So the fix was deployed. Two caching layers were hiding it.
+
+**1. The service worker took two reloads to show any change.** The old fetch
+handler was stale-while-revalidate — `return hit || net` hands back the cached
+response immediately and refreshes the cache in the background. The new bytes
+therefore only appear on the *next* load. For a user checking whether a fix
+worked, that reads as "it didn't".
+
+**2. GitHub Pages sends `cache-control: max-age=600`.** Confirmed from the
+response headers. Even a network-first worker would be answered from the
+browser's own HTTP cache for up to ten minutes.
+
+**The fix, split by what the file is:**
+- **Code** (`html/css/js/webmanifest`) is now **network-first**, cache as the
+  offline fallback — a deploy is live on the very next load.
+- **Everything else** (icons, images) stays **cache-first** with a background
+  refresh. They change about once a year; a round trip per launch buys nothing.
+- Every network fetch uses `cache: 'no-cache'`, which forces revalidation
+  against the server rather than disabling caching — an unchanged file still
+  costs only a 304, but the `max-age=600` window can no longer serve stale
+  bytes. Applied to the install step too, which otherwise warms the cache
+  through the same stale HTTP cache it was meant to bypass.
+- `VERSION` → `ember-v3`, so activate purges the v2 caches.
+
+**Two things to make this debuggable rather than mysterious:**
+- **Settings → Check for updates** — messages the worker to drop every cached
+  response, calls `registration.update()`, then reloads. The manual escape hatch
+  when a cache is suspected.
+- **Settings → About now shows a Build stamp**, derived from
+  `document.lastModified` (the HTML's `Last-Modified` header, i.e. the deploy
+  time). It needs no manual version bumping and cannot drift from what is
+  actually running, so "am I even on the new build?" is answerable in two taps.
+
+Added `.nojekyll` — standard for a non-Jekyll Pages site, cheap insurance
+against Jekyll's handling of unusual paths.
+
+**Verified** by simulating a deploy: edit a CSS custom property on disk, reload
+**once**, and the new value is live (was: needed two). Offline boot still works,
+and the app passes at 320/390/1280px with an export→import round trip and no
+console errors.
