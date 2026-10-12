@@ -80,7 +80,7 @@ export function renderSettings(){
       </button>
       <button class="srow" data-act="update">
         <span class="ic">${I.restore}</span>
-        <span class="tx"><b>Check for updates</b><span>Clear the offline cache and reload the latest build</span></span>
+        <span class="tx"><b>Check for updates</b><span>Running build ${esc(buildStamp())} — tap to clear the cache and reload</span></span>
         <span class="chev">${I.chevR}</span>
       </button>
       <button class="srow" data-act="about">

@@ -477,3 +477,37 @@ Verified in both themes: completed rows now carry an even tint, the risk banner
 is flat, the splash glow is smooth. Passes at 320/390/1280px with an
 export→import round trip, offline boot, single-reload deploy pickup, and no
 console errors. `VERSION` → `ember-v4` so the activate step purges v3.
+
+---
+
+## 2026-10-12 — The update button couldn't deliver itself
+
+Reported as "where is the check for updates feature?". It was live and correct —
+Settings → App, above About — but invisible on the reporter's phone, because of
+a bootstrapping flaw worth recording: **the control that escapes a stale cache
+was itself being served from that stale cache.**
+
+Measured rather than assumed, by replaying the actual upgrade: serve commit
+`673d247` (the build on the phone, with the old stale-while-revalidate worker),
+install it, then swap the server to the current build.
+
+```
+start (old build installed):  "Check for updates" visible = false
+--- new build deployed ---
+reload #1:                    visible = false   (old cache answers, new files fetched behind it)
+reload #2:                    visible = true
+```
+
+So the answer is "reload twice", and it is a one-time transition: once the
+network-first worker activates, one reload suffices from then on. Nothing to fix
+in code — but it is the predictable cost of ever having shipped a cache-first
+worker, and the reason the network-first switch was worth making.
+
+**Small improvement while here:** the row now reads *"Running build Oct 12,
+04:45 PM — tap to clear the cache and reload"*. Which build you are on is the
+question you actually have when you reach for this control, so the row answers
+it without a trip into About. Verified the tap works end to end: caches purge,
+the worker updates, the page reloads and returns to the same tab (the hash
+route survives).
+
+`VERSION` → `ember-v5`.
